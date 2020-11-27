@@ -5,6 +5,8 @@ import pickle
 import mysql.connector
 import lepl.apps.rfc3696
 
+UniqueTweets = 1
+
 class authenticate:
     def __init__(self,username, password):
         self.username = username
@@ -57,50 +59,89 @@ def SignUp(conn, addr):
     val = (username, password, email, name)
     mycursor = mydb.cursor()
     mycursor.execute(query, val)
+
+    val = (username) 
+    query = "CREATE TABLE %s (Username varchar(20), FollowBack int)"
+    mycursor.execute(query,val)
     mydb.commit()
     return "Done"
 
-def Authenticate(conn,addr):
-    print("Authentication....")
-    data = conn.recv(BUFFERSIZE)
-    credentials = pickle.loads(data)
-    print(credentials.username)
-    print(credentials.password)
-    # query = ("SELECT * FROM Users )
-
 def NewTweet(conn, addr):
+    username = ""
     data = conn.recv(BUFFERSIZE)
-    message = pickle.loads(data)
-    
+    msg = pickle.loads(data)
+    print(msg)
+    global UniqueTweets
+    tweet_id = str(UniqueTweets)
+    UniqueTweets+=1
+    tag_arr = msg.hashtags
+    while(len(tag_arr)<5):
+        tag_arr.append("NULL")            
+    query = "INSERT INTO Tweets (Username, TweetID, TweetMessage, Hashtag1, Hashtag2, Hashtag3, Hashtag4, Hashtag5) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    val = (username, tweet_id, msg.message, msg.hashtags[0], msg.hashtags[1], msg.hashtags[2], msg.hashtags[3], msg.hashtags[4])
+    mycursor = mydb.cursor()
+    mycursor.execute(query, val)
+    mydb.commit()
+    print("Done tweet")
     
 def DeleteFollower(conn, addr):
-    print("Deleting follower")
+    data=conn.recv(BUFFERSIZE)
+    username =""
+    follower=data.decode('ascii')
+    query="DELETE FROM %s WHERE Username ='%s'"
+    val=(username,follower)
+    mycursor=mydb.cursor()
+    mycursor.execute(query,val)
+    mydb.commit()
+    print("Deleted follower")
 
-def Decode(msg,conn,addr):
-    if msg[0] =="a":
-        Authenticate(conn,addr)
-    if msg[0] == "n":
-        NewTweet(msg,conn,addr)
-    if msg[0] == "d":
-        DeleteFollower(conn,addr)
+
+
+def Login(conn):
+    data = conn.recv(BUFFERSIZE)
+    login_data = pickle.loads(data)
+    query = "SELECT * FROM Users where Username='%s' and Password='%s'"
+    val = (login_data.username, login_data.password)
+    mycursor = mydb.cursor()
+    mycursor.execute(query, val)
+    result = mycursor.fetchall()
+    print(result)
+    print(type(result))
+    return login_data
+
+def show
     
-
-
 while True:
     conn, addr = server_socket.accept()
-    print(conn)
+    # print(conn)
+    # data = conn.recv(BUFFERSIZE)
+    # received_msg = data.decode('ascii')
+    # print("message received is ", received_msg)
+
+    # response = "Welcome to the Mini Twitter"
+    # data = response.encode('ascii')
+    # conn.send(data)
     data = conn.recv(BUFFERSIZE)
-    received_msg = data.decode('ascii')
-    print("message received is ", received_msg)
+    query = data.decode('ascii')
+    query = query.strip()
 
-    Decode(received_msg,conn,addr)
-    response = "Welcome to the Mini Twitter"
-    data = response.encode('ascii')
-    conn.send(data)
+    if(query=="a"):
+        result = Login(conn)
+        conn.close()
+    if(query=="b"):
+        SignUp(conn,addr)
+        conn.close()
+    if(query=="c"):
+        DeleteFollower(conn,addr)
+        conn.close()
+    if(query == "d"):
+        NewTweet(conn,addr)
+        conn.close()
+    
 
-    result = SignUp(conn, addr)
-    print(result)
-
-    conn.shutdown(socket.SHUT_RDWR)
-    conn.close()
+    # result = SignUp(conn, addr)
+    # print(result)
+    # NewTweet(conn, addr, "prasad")
+    # conn.shutdown(socket.SHUT_RDWR)
+    # conn.close()
 server_socket.close()
