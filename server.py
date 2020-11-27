@@ -2,12 +2,25 @@ import socket
 import os
 import time
 import pickle
-import pyodbc
+import mysql.connector
+import lepl.apps.rfc3696
 
 class authenticate:
     def __init__(self,username, password):
         self.username = username
         self.password = password
+
+class signup:
+    def __init__(self, username, password,name,email):
+        self.username = username
+        self.password = password
+        self.email = email
+        self.name = name
+
+class tweet_info():
+    def __init__(self, message, hashtags):
+        self.message = message
+        self.hashtags = hashtags
 
 server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 ip = socket.gethostbyname(socket.gethostname())
@@ -21,14 +34,31 @@ print('Running on IP: '+ip)
 print('Running on port: '+str(port))
 
 # Connecting with database
-cnxn_str = ("Driver={SQL Server Native Client 11.0};"
-            "Server=UKXXX00123,45600;"
-            "Database=DB01;"
-            "UID=JoeBloggs;"
-            "PWD=Password123;")
+mydb = mysql.connector.connect(host="localhost",
+                                user="root",
+                                password="123456789",
+                                database="Minitweet",
+                                )
 
-cnxn = pyodbc.connect(cnxn_str)
-
+def SignUp(conn, addr):
+    data = conn.recv(BUFFERSIZE)
+    credentials = pickle.loads(data)
+    username = credentials.username
+    password = credentials.password
+    email = credentials.email
+    name = credentials.name
+    # emailchecker = lepl.apps.rfc3696.Email()
+    # if not emailchecker(email):
+    #     return "Invalid email"
+    if len(password)<3:
+        return "Bad password"
+    
+    query = "INSERT INTO Users (Username, Password, Email, Name) VALUES (%s, %s, %s, %s)"
+    val = (username, password, email, name)
+    mycursor = mydb.cursor()
+    mycursor.execute(query, val)
+    mydb.commit()
+    return "Done"
 
 def Authenticate(conn,addr):
     print("Authentication....")
@@ -36,11 +66,11 @@ def Authenticate(conn,addr):
     credentials = pickle.loads(data)
     print(credentials.username)
     print(credentials.password)
-    query = ("SELECT * FROM Users "
-         f"WHERE Username = '{date}'")
+    # query = ("SELECT * FROM Users )
 
-def NewTweet(msg,conn,addr):
-    print("New Tweet")
+def NewTweet(conn, addr):
+    data = conn.recv(BUFFERSIZE)
+    message = pickle.loads(data)
     
     
 def DeleteFollower(conn, addr):
@@ -68,8 +98,8 @@ while True:
     data = response.encode('ascii')
     conn.send(data)
 
-
-
+    result = SignUp(conn, addr)
+    print(result)
 
     conn.shutdown(socket.SHUT_RDWR)
     conn.close()

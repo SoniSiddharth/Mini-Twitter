@@ -4,11 +4,37 @@ from _thread import *
 import threading
 import pickle
 
-# def Authenticate(username, password):
-#     return 0
+class authenticate:
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+
+class signup:
+    def __init__(self, username, password,name,email):
+        self.username = username
+        self.password = password
+        self.email = email
+        self.name = name
+         
+class tweet_info():
+    def __init__(self, message, hashtags):
+        self.message = message
+        self.hashtags = hashtags
+
     
-def NewTweet():
-    pass
+def SignUp(conn, message):
+    data = pickle.dumps(message)
+    client_socket.send(data)
+
+def NewTweet(conn):
+    tweet_msg = input("Enter New tweet: ")
+    hashtags = input("Provide the hashtags related to the above tweet (separated by space): ")
+    tags = list(hashtags.split())
+    
+    msg = tweet_info(tweet_msg, tags)
+    data = pickle.dumps(message)
+    client_socket.send(data)
+
 def DeleteFollower():
     pass
 def LogOut():
@@ -19,10 +45,6 @@ def SearchPerson():
 username = ""
 password = ""
 
-class authenticate:
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
 
 
 #opening twitter
@@ -43,6 +65,21 @@ else:
 
 
 while True:
+
+    start = int(input("For new user sign up press 0 and for login press 1"))
+    if start==0:
+        print("Enter username")
+        username = input()
+        print("Enter password")
+        password = input()
+        print("Enter name")
+        name = input()
+        print("Enter email")
+        email = input()
+        
+        new_signup = signup(username, password, name, email)
+        SignUp(client_socket, new_signup)
+    
     print("Enter your username, if want to exit application press -1")
     #new user session
     username = input()
@@ -55,10 +92,9 @@ while True:
         data = pickle.dumps(new_user)
         client_socket.send(data)
 
-
-        
         if 1==0:
             print("Invalid input")
+            
             continue
         else:
             print("You are logged in successfully")
