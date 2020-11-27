@@ -66,8 +66,24 @@ def SignUp(conn, addr):
     mydb.commit()
     return "Done"
 
-def NewTweet(conn, addr):
-    username = ""
+def Login(conn):
+    data = conn.recv(BUFFERSIZE)
+    login_data = pickle.loads(data)
+    query = "SELECT * FROM Users where Username='%s' and Password='%s'"
+    val = (login_data.username, login_data.password)
+    mycursor = mydb.cursor()
+    mycursor.execute(query, val)
+    result = mycursor.fetchall()
+
+    return_arr = [login_data]
+    if len(result)==0:
+        return_arr.append(0)
+    else:
+        return_arr.append(1)
+    return return_arr
+
+def NewTweet(conn, addr,username):
+    # username = ""
     data = conn.recv(BUFFERSIZE)
     msg = pickle.loads(data)
     print(msg)
@@ -84,9 +100,9 @@ def NewTweet(conn, addr):
     mydb.commit()
     print("Done tweet")
     
-def DeleteFollower(conn, addr):
+def DeleteFollower(conn, addr,username):
     data=conn.recv(BUFFERSIZE)
-    username =""
+    # username =""
     follower=data.decode('ascii')
     query="DELETE FROM %s WHERE Username ='%s'"
     val=(username,follower)
@@ -95,22 +111,13 @@ def DeleteFollower(conn, addr):
     mydb.commit()
     print("Deleted follower")
 
+def showAllFollowers(username):
+    query="SELECT * FROM %s"
+    val=(username)
+    # mycursor=mydb.cursor()
+    # mycursor.execute(query,val)
+    # mydb.commit()
 
-
-def Login(conn):
-    data = conn.recv(BUFFERSIZE)
-    login_data = pickle.loads(data)
-    query = "SELECT * FROM Users where Username='%s' and Password='%s'"
-    val = (login_data.username, login_data.password)
-    mycursor = mydb.cursor()
-    mycursor.execute(query, val)
-    result = mycursor.fetchall()
-    print(result)
-    print(type(result))
-    return login_data
-
-def show
-    
 while True:
     conn, addr = server_socket.accept()
     # print(conn)
@@ -121,22 +128,26 @@ while True:
     # response = "Welcome to the Mini Twitter"
     # data = response.encode('ascii')
     # conn.send(data)
+
+
+    
     data = conn.recv(BUFFERSIZE)
     query = data.decode('ascii')
     query = query.strip()
 
     if(query=="a"):
         result = Login(conn)
-        conn.close()
+        # conn.close()
     if(query=="b"):
-        SignUp(conn,addr)
-        conn.close()
+        SignUp(conn,addr,username)
+        # conn.close()
     if(query=="c"):
-        DeleteFollower(conn,addr)
-        conn.close()
+        DeleteFollower(conn,addr,username)
+        # conn.close()
     if(query == "d"):
-        NewTweet(conn,addr)
-        conn.close()
+        NewTweet(conn,addr,username)
+        # conn.close()
+    
     
 
     # result = SignUp(conn, addr)

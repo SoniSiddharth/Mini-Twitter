@@ -4,6 +4,7 @@ from _thread import *
 import threading
 import pickle
 #Prasad127@
+# https://docs.google.com/document/d/1Q-nVq89qVQUU5DyaO6mRzTyLZm5R6URW4Xdqkk-VsOM/edit#heading=h.p2nityf5kx5q
 class authenticate:
     def __init__(self, username, password):
         self.username = username
@@ -44,7 +45,11 @@ def LoginCheck(client_socket, username, password):
     data = pickle.dumps(credentials)
     client_socket.send(data)
 
+def Refresh():
+    pass
 
+def ListFollowers():
+    pass
 
 def DeleteFollower(client_socket ,follower):
     client_socket.send(bytes(follower))
