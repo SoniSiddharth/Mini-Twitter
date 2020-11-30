@@ -3,50 +3,12 @@ import os
 import time
 import pickle
 import mysql.connector
+from classes import *
 # import lepl.apps.rfc3696
 
 UniqueTweets = 1
 
 
-class signup():
-    def __init__(self,func,username, password,name,email, flag):
-        self.func=func
-        self.username = username
-        self.password = password
-        self.email = email
-        self.name = name
-        self.flag=flag
-         
-class login:
-    def __init__(self,func,username, password,flag):
-        self.func=func
-        self.username = username
-        self.password = password
-        self.flag=flag
-
-class newtweet():
-    def __init__(self,func,message, hashtags,flag):
-        self.func=func
-        self.message = message
-        self.hashtags = hashtags
-        self.flag=flag
-
-class deletefollower():
-    def __init__(self,func,follower,flag):
-        self.func=func
-        self.follower=follower
-        self.flag=flag
-        
-class showallfollowers():
-    def __init__(self,func,arr):
-        self.func=func
-        self.arr=arr
-        
-class refresh():
-    def __init__(self,func,tweets, count):
-        self.func=func
-        self.tweets=tweets
-        self.count=count
 
 server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 ip = socket.gethostbyname(socket.gethostname())
@@ -67,23 +29,19 @@ mydb = mysql.connector.connect(host="localhost",
                                 )
 
 def SignUp(conn, addr, data):
-    credentials = pickle.loads(data)
-    username = credentials.username
-    password = credentials.password
-    email = credentials.email
-    name = credentials.name
     # emailchecker = lepl.apps.rfc3696.Email()
     # if not emailchecker(email):
     #     return "Invalid email"
-    if len(password)<3:
+    if len(data.password)<3:
         #Tell client that signup was not succesful due to weak password
         reply=signup("","","","","",0)
         msg=pickle.dumps(reply)
         conn.send(msg)
         return "Bad password"
     
-    query = "INSERT INTO Users (Username, Password, Email, Name) VALUES (%s, %s, %s, %s)"
-    val = (username, password, email, name)
+    query = "INSERT INTO Users (Username, PasswordName, Age, Gender, Status, City, Institute) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,)"
+    val = (data.username, data.password, data.email, data.name, data.age, data.gender, data.status, data.city, data.institute)
+    mycursor = mydb.cursor()
     mycursor = mydb.cursor()
     mycursor.execute(query, val)
 
@@ -98,11 +56,9 @@ def SignUp(conn, addr, data):
     conn.send(msg)
     return "Done"
 
-def Login(conn):
-    data = conn.recv(BUFFERSIZE)
-    login_data = pickle.loads(data)
+def Login(conn, loginData):
     query = "SELECT * FROM Users where Username='%s' and Password='%s'"
-    val = (login_data.username, login_data.password)
+    val = (loginData.username, loginData.password)
     mycursor = mydb.cursor()
     mycursor.execute(query, val)
     result = mycursor.fetchall()
@@ -110,23 +66,21 @@ def Login(conn):
     if(len(result)==0):#not sure how to see if result is empty or not
         reply=login("","",0)
     else:
-        reply=login("","",0)
+        reply=login("","",1 )
+    reply.send(conn)
     
-    data=pickle.loads(reply)
-    conn.send(data)   
-    #why??
-    # return_arr = [login_data]
-    # if len(result)==0:
-    #     return_arr.append(0)
-    # else:
-    #     return_arr.append(1)
-    # return return_arr
+    # data=pickle.loads(reply)
+    # conn.send(data)
 
-def NewTweet(conn, addr,username):
-    # username = ""
-    data = conn.recv(BUFFERSIZE)
-    msg = pickle.loads(data)
-    print(msg)
+    # server side
+    return_arr = [loginData]
+    if len(result)==0:
+        return_arr.append(0)
+    else:
+        return_arr.append(1)
+    return return_arr
+
+def NewTweet(conn, addr,username, msg):
     global UniqueTweets
     tweet_id = str(UniqueTweets)
     UniqueTweets+=1
@@ -145,9 +99,7 @@ def NewTweet(conn, addr,username):
     conn.send(data)
     print("Done tweet")
     
-def DeleteFollower(conn, addr,username):
-    msg=conn.recv(BUFFERSIZE)
-    data=pickle.loads(msg)
+def DeleteFollower(conn, addr,username, data):
     follower=data.follower
     query="DELETE FROM %s WHERE Username ='%s'"
     val=(username,follower)
@@ -161,18 +113,18 @@ def DeleteFollower(conn, addr,username):
     conn.send(data)
     print("Deleted follower")
 
-def ShowAllFollowers(conn,username):
+def ShowAllFollowers(conn, username, data):
     query="SELECT Username FROM %s" #select all entries from Username column in the database of requesting user
     val=(username,)
     mycursor=mydb.cursor()
     mycursor.execute(query,val)
     arr=mycursor.fetchall()
-    results=followers(arr)
+    results=showallfollowers("",arr)
     data=pickle.dumps(results)
     conn.send(data)
     print("Followers list sent")
     
-def refresh(conn, username):
+def Refresh(conn, username, data):
     query="SELECT Username FROM %s"
     val=(username,)
     mycursor=mydb.cursor()
@@ -200,18 +152,24 @@ def refresh(conn, username):
     if count==0:
         reply=refresh("",ls,0)
     else:
-        reply=new_tweets("",ls,5)
+        reply=refresh("",ls,5)
     data=pickle.dumps(reply)
     conn.send(data)
-
-
-def SearchPerson():
-    
     
 
+def SearchPerson(conn, addr, username, data):
+    query="SELECT Username, Age, Gender, Status, City, Institute FROM Users where Username = %s or Name = %s"
+    val = (data.username, data.name)
+    mycursor = mydb.cursor()
+    mycursor.execute(query,val)
+    results = mycursor.fetchall()
+    data=pickle.dumps(results)
+    conn.send(data)
+    print("Data of the searched person sent")
+
+conn, addr = server_socket.accept()
 
 while True:
-    conn, addr = server_socket.accept()
     # print(conn)
     # data = conn.recv(BUFFERSIZE)
     # received_msg = data.decode('ascii')
@@ -220,28 +178,50 @@ while True:
     # response = "Welcome to the Mini Twitter"
     # data = response.encode('ascii')
     # conn.send(data)
+    msg = conn.recv(BUFFERSIZE)
+    data=pickle.loads(msg)
+    query = data.func
 
-
-    
-    data = conn.recv(BUFFERSIZE)
-    query = data.decode('ascii')
-    query = query.strip()
-
-    if(query=="a"):
-        result = Login(conn)
+    if(query=="SignUp"):
+        SignUp(conn,addr,data)
+        # result = Login(conn)
+        # continue
         # conn.close()
-    if(query=="b"):
-        SignUp(conn,addr,username)
-        # conn.close()
-    if(query=="c"):
-        DeleteFollower(conn,addr,username)
-        # conn.close()
-    if(query == "d"):
-        NewTweet(conn,addr,username)
-        # conn.close()
-    
-    
-
+    else:
+        flag = 0
+        while(flag==0):
+            if(query=="Login"):
+                returnedArr = Login(conn, data)
+                if (returnedArr[-1]==1):
+                    flag=1
+                    break
+            else:
+                print("please login first")
+                msg = conn.recv(BUFFERSIZE)
+                data=pickle.loads(msg)
+                query = data.func
+        username = returnedArr[0].username
+        while True:
+            msg = conn.recv(BUFFERSIZE)
+            data=pickle.loads(msg)
+            query = data.func
+            if(query=="NewTweet"):
+                DeleteFollower(conn,addr,username,data)
+                # conn.close()
+            elif(query == "DeleteFollower"):
+                NewTweet(conn,addr,username, data)
+                # conn.close()
+            elif(query == "ShowAllFollowes"):
+                ShowAllFollowers(conn, addr, username, data)
+            elif(query == "Refresh"):
+                Refresh(conn, addr, username, data)
+            elif(query == "SearchPerson"):
+                SearchPerson(conn, addr, username, data)
+            elif(query == "Logout"):
+                # Logout(conn, addr, username, data)
+                conn.send(bytes("bye"))
+                conn.close()
+                break
     # result = SignUp(conn, addr)
     # print(result)
     # NewTweet(conn, addr, "prasad")
