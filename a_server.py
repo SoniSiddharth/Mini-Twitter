@@ -79,9 +79,16 @@ def Login(conn, loginData):
     return return_arr
 
 def NewTweet(conn, addr,username, msg):
-    global UniqueTweets
-    tweet_id = str(UniqueTweets)
-    UniqueTweets+=1
+    #getting tweet ID
+    query = "Select TweetID from Tweets"
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    arr = mycursor.fetchall()
+
+    num = arr[-1][0]
+    tweetid = int(num)+1
+    tweet_id = str(tweetid)
+    
     tag_arr = msg.hashtags
     while(len(tag_arr)<5):
         tag_arr.append("NULL")            
@@ -90,7 +97,32 @@ def NewTweet(conn, addr,username, msg):
     mycursor = mydb.cursor()
     mycursor.execute(query, val)
     mydb.commit()
-    
+
+    dic={}
+    query = "SELECT * from Hashtags"
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    results = mycursor.fetchall()
+
+    for j in results:
+        dic[j[0]] = j[1]
+    for tag in tag_arr:
+        if (tag!="NULL"):
+            if tag in dic:
+                count = dic[tag] + 1
+                query = "UPDATE Hashtags SET Count = %s where Tag=%s"
+                mycursor = mydb.cursor()
+                val = (str(count), str(tag))
+                mycursor.execute(query, val)
+                mydb.commit()
+            else:
+                count = 1
+                query = "INSERT INTO Hashtags (Tag, Count) VALUES (%s, %s)"
+                mycursor = mydb.cursor()
+                val = (str(tag),str(count))
+                mycursor.execute(query, val)
+                mydb.commit()
+                print("Tag added")
     #Tell the client that Tweet was succesful
     reply=newtweet("","","",1)
     data=pickle.dumps(reply)
@@ -181,7 +213,39 @@ def Follow(conn, addr, username, data):
         print("Following ", data.username)
     else:
         print("person not found")
-        
+
+def SearchByHashtag(conn,data):
+    hashtag=data.hashtag
+    query="SELECT * FROM Tweets where Hashtag1=%s or Hashtag2=%s or Hashtag3=%s or Hashtag4=%s or Hashtag5=%s"
+    val=(hashtag,hashtag,hashtag,hashtag,hashtag)
+    mycursor=mydb.cursor()
+    mycursor.execute(query,val)
+    results=mycursor.fetchall() 
+
+    #send data to client
+
+    reply=searchbyhashtag("","",results)
+    data=pickle.dumps(reply)
+    conn.send(data)
+
+def TrendingHashtags(conn, data):
+    query = "SELECT Tag from Hashtags ORDER BY Count DESC"
+    mycursor=mydb.cursor()
+    mycursor.execute(query)
+    results=mycursor.fetchall()
+    arr = list() 
+    print(results)
+    counter = 0
+    for j in results:
+        if counter==5:
+            break
+        counter+=1
+        arr.append(j[0])
+    reply = trendinghashtags("", arr)
+    data = pickle.dumps(reply)
+    conn.send(data)
+    print("trending hashtags sent")
+
 conn, addr = server_socket.accept()
 
 while True:
@@ -232,7 +296,6 @@ while True:
             elif(query == "DeleteFollower"):
                 print("deleting follower")
                 DeleteFollower(conn,addr,username,data)
-                # conn.close()
             elif(query == "ShowAllFollowes"):
                 ShowAllFollowers(conn, addr, username, data)
             elif(query == "Refresh"):
@@ -241,6 +304,10 @@ while True:
                 SearchPerson(conn, addr, username, data)
             elif(query =="Follow"):
                 Follow(conn, addr, username, data)
+            elif(query == "SearchByHashtag"):
+                SearchByHashtag(conn,data)
+            elif(query == "TrendingHashtags"):
+                TrendingHashtags(conn, data)
             elif(query == "Logout"):
                 # Logout(conn, addr, username, data)
                 conn.send(bytes("bye"))

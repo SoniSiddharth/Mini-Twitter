@@ -146,9 +146,51 @@ def Follow(client_socket,username):
     else:
         print("Following ",username)
 
-def SearchByHashtag(client_co):
+def SearchByHashtag(client_socket, hashtag):
+    #client to server
+    tweets=list()
+    msg=searchbyhashtag("SearchByHashtag",hashtag,tweets)
+    data=pickle.dumps(msg)
+    client_socket.send(data)
 
+    #server to client
+    reply = client_socket.recv(BUFFERSIZE)
+    while(len(reply)==0):
+        reply = client_socket.recv(BUFFERSIZE) 
+    data = pickle.loads(reply)
+    if(len(data.tweets)==0):
+        print("No tweets with this hashtag")
+    else:
+        for tweet in data.tweets:
+            print("Tweet done by: ")
+            print(tweet[0])
+            print("Tweet ID: ")
+            print(tweet[1])
+            print("Tweet: ")
+            print(tweet[2])
+            print("Following hashtags were used in this tweet")
+            for j in range(3,8):
+                if(tweet[j]!="NULL"):
+                    print(tweet[j])
+                else:
+                    break
+            print("\n")
 
+def TrendingHashtags(client_socket):
+    #client to server
+    message = trendinghashtags("TrendingHashtags", list())
+    data=pickle.dumps(message)
+    client_socket.send(data)
+
+    #server to client
+    reply = client_socket.recv(BUFFERSIZE)
+    while(len(reply)==0):
+        reply = client_socket.recv(BUFFERSIZE) 
+    data = pickle.loads(reply)
+    result = data.hashtags
+    print("Following are the top 5 trending hashtags")
+    for j in result:
+        print(j)
 
 def LogOut():
     pass

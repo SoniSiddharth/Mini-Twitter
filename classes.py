@@ -93,6 +93,7 @@ class refresh():
         data = conn.recv(BUFFERSIZE)
         b = pickle.loads(data)
         return b
+
 class logout:
     def __init__(self,func):
         self.func = func
@@ -104,7 +105,7 @@ class logout:
         b = pickle.loads(data)
         return b
 
-class searchperson():
+class searchperson:
     def __init__(self,func,username,name,age,gender,status,city,institute,flag):
         self.func=func
         self.username=username
@@ -128,3 +129,14 @@ class follow:
         self.func = func
         self.username = username
         self.name = name
+
+class searchbyhashtag:
+    def __init__(self,func,hashtag,tweets):
+        self.func=func
+        self.hashtag=hashtag
+        self.tweets=tweets
+
+class trendinghashtags:
+    def __init__(self, func, hashtags):
+        self.func = func
+        self.hashtags = hashtags

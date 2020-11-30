@@ -79,6 +79,8 @@ while True:
             print("Enter c for deleting follower")
             print("Enter n for new tweet")
             print("Enter f to follow someone")
+            print("Enter x to search by hashtag")
+            print("Enter t for trending hashtags")
             print("Enter d for log out")
             while True:   
                 print("Enter your query") 
@@ -90,9 +92,16 @@ while True:
                     SearchPerson(client_socket,username)
                 if query =="c":
                     DeleteFollower(client_socket,username)
+                if query=="n":
+                    NewTweet(client_socket, username)
                 if query =="f":
                     username = input("Enter the username of the person: ")
                     Follow(client_socket, username)
+                if query=="x":
+                    hashtag=input("Enter hashtag ")
+                    SearchByHashtag(client_socket,hashtag)
+                if query=="t":
+                    TrendingHashtags(client_socket)
                 if query == "d":
                     LogOut(client_socket,username)
             
