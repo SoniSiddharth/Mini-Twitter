@@ -8,8 +8,6 @@ from classes import *
 
 UniqueTweets = 1
 
-
-
 server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 ip = socket.gethostbyname(socket.gethostname())
 port = int(input('Enter desired port --> '))
@@ -32,46 +30,46 @@ def SignUp(conn, addr, data):
     # emailchecker = lepl.apps.rfc3696.Email()
     # if not emailchecker(email):
     #     return "Invalid email"
-    if len(data.password)<3:
-        #Tell client that signup was not succesful due to weak password
-        reply=signup("","","","","",0)
-        msg=pickle.dumps(reply)
-        conn.send(msg)
-        return "Bad password"
+    # if len(data.password)<3:
+    #     #Tell client that signup was not succesful due to weak password
+    #     reply=signup("","","","","",0)
+    #     msg=pickle.dumps(reply)
+    #     conn.send(msg)
+    #     return "Bad password"
     
-    query = "INSERT INTO Users (Username, PasswordName, Age, Gender, Status, City, Institute) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,)"
+    query = "INSERT INTO Users (Username, Password, Email, Name, Age, Gender, Status, City, Institute) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
     val = (data.username, data.password, data.email, data.name, data.age, data.gender, data.status, data.city, data.institute)
     mycursor = mydb.cursor()
-    mycursor = mydb.cursor()
     mycursor.execute(query, val)
+    mydb.commit()
 
-    val = (username) 
-    query = "CREATE TABLE %s (Username varchar(20), FollowBack int)"
-    mycursor.execute(query,val)
+    mycursor = mydb.cursor() 
+    query = "CREATE TABLE "+ str(data.username)+" (Username varchar(20), FollowBack INT)"
+    # val = tuple(data.username,)
+    mycursor.execute(query)
     mydb.commit()
     
     #Tell client if signup was succesful
-    reply=signup("","","","","",1)
+    reply=signup("","","","","","","","","","",1)
     msg=pickle.dumps(reply)
     conn.send(msg)
     return "Done"
 
 def Login(conn, loginData):
-    query = "SELECT * FROM Users where Username='%s' and Password='%s'"
-    val = (loginData.username, loginData.password)
+    query = "SELECT * FROM Users where Username=" + "'" +str(loginData.username)+ "'" +" AND Password ="+ "'"+ str(loginData.password)+"'"
+    # val = (loginData.username, loginData.password)
+    print(query)
     mycursor = mydb.cursor()
-    mycursor.execute(query, val)
+    mycursor.execute(query)
     result = mycursor.fetchall()
 
     if(len(result)==0):#not sure how to see if result is empty or not
-        reply=login("","",0)
+        reply=login("","","",0)
     else:
-        reply=login("","",1 )
-    reply.send(conn)
+        reply=login("","","",1)
     
-    # data=pickle.loads(reply)
-    # conn.send(data)
-
+    data=pickle.dumps(reply)
+    conn.send(data)
     # server side
     return_arr = [loginData]
     if len(result)==0:
@@ -94,17 +92,16 @@ def NewTweet(conn, addr,username, msg):
     mydb.commit()
     
     #Tell the client that Tweet was succesful
-    reply=newtweet("","",1)
+    reply=newtweet("","","",1)
     data=pickle.dumps(reply)
     conn.send(data)
     print("Done tweet")
     
 def DeleteFollower(conn, addr,username, data):
     follower=data.follower
-    query="DELETE FROM %s WHERE Username ='%s'"
-    val=(username,follower)
+    query="DELETE FROM "+str(username)+" WHERE Username ='" + str(data.follower) +"'"
     mycursor=mydb.cursor()
-    mycursor.execute(query,val)
+    mycursor.execute(query)
     mydb.commit()
     
     #Tell client that follower was succesfully deleted
@@ -158,15 +155,33 @@ def Refresh(conn, username, data):
     
 
 def SearchPerson(conn, addr, username, data):
-    query="SELECT Username, Age, Gender, Status, City, Institute FROM Users where Username = %s or Name = %s"
+    query="SELECT Username, Name, Age, Gender, Status, City, Institute FROM Users where Username = %s or Name = %s"
     val = (data.username, data.name)
     mycursor = mydb.cursor()
     mycursor.execute(query,val)
     results = mycursor.fetchall()
-    data=pickle.dumps(results)
+    if len(results)==0:
+        message = searchperson("SearchPerson", "", "", "", "", "", "", "", 0)
+    else:
+        results = results[0]
+        print(results)
+        message = searchperson("SearchPerson", results[0], results[1], results[2], results[3], results[4], results[5], results[6], 1)
+    data=pickle.dumps(message)
     conn.send(data)
     print("Data of the searched person sent")
+    return message.flag
 
+def Follow(conn, addr, username, data):
+    available = SearchPerson(conn, addr, username, data)
+    if (available==1):
+        query = "INSERT INTO "+ str(username) + " (Username)" + " VALUES("+ "'"+str(data.username)+"'" ")"
+        mycursor = mydb.cursor()
+        mycursor.execute(query)
+        mydb.commit()
+        print("Following ", data.username)
+    else:
+        print("person not found")
+        
 conn, addr = server_socket.accept()
 
 while True:
@@ -179,6 +194,8 @@ while True:
     # data = response.encode('ascii')
     # conn.send(data)
     msg = conn.recv(BUFFERSIZE)
+    while(len(msg)==0):
+        msg=conn.recv(BUFFERSIZE)
     data=pickle.loads(msg)
     query = data.func
 
@@ -201,15 +218,20 @@ while True:
                 data=pickle.loads(msg)
                 query = data.func
         username = returnedArr[0].username
+        print(username)
         while True:
             msg = conn.recv(BUFFERSIZE)
+            while len(msg)==0:
+                msg = conn.recv(BUFFERSIZE)
+            # print(msg)
             data=pickle.loads(msg)
             query = data.func
             if(query=="NewTweet"):
-                DeleteFollower(conn,addr,username,data)
+                NewTweet(conn,addr,username, data)
                 # conn.close()
             elif(query == "DeleteFollower"):
-                NewTweet(conn,addr,username, data)
+                print("deleting follower")
+                DeleteFollower(conn,addr,username,data)
                 # conn.close()
             elif(query == "ShowAllFollowes"):
                 ShowAllFollowers(conn, addr, username, data)
@@ -217,6 +239,8 @@ while True:
                 Refresh(conn, addr, username, data)
             elif(query == "SearchPerson"):
                 SearchPerson(conn, addr, username, data)
+            elif(query =="Follow"):
+                Follow(conn, addr, username, data)
             elif(query == "Logout"):
                 # Logout(conn, addr, username, data)
                 conn.send(bytes("bye"))

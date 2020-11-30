@@ -4,6 +4,7 @@ from _thread import *
 import threading
 import pickle
 #Prasad127@
+import random
 # https://docs.google.com/document/d/1Q-nVq89qVQUU5DyaO6mRzTyLZm5R6URW4Xdqkk-VsOM/edit#heading=h.p2nityf5kx5q
 
 
@@ -25,39 +26,50 @@ client_socket.connect((target_ip,int(target_port)))
 #     print("Could not open application")
 # else:
 #     print(str(reply_from_server.decode('ascii')))    
-
+username ="fweufe8339"
+password ="Bhadwa"
 while True:
     start = int(input("For new user sign up press 0 and for login press 1 : "))
     
     if start==0:
         print("Enter username")
-        username = input()
+        # username = input()
+        username = "b" + str(random.randint(1,10000))
         print("Enter password")
-        password = input()
-        print("Enter name")
-        name = input()
+        # password = input()
+        password = "b"
         print("Enter email")
-        email = input()
+        # email = input()
+        email = "b@gmail.com"
+        print("Enter name")
+        # name = input()
+        name = "soni"
         print("Enter Age")
-        age = input()
+        # age = input()
+        age = 2
         print("Enter Gender")
-        gender = input()
+        # gender = input()
+        gender = "F"
         print("Enter Status")
-        status = input()
+        # status = input()
+        status = "single"
         print("Enter City")
-        city = input()
+        # city = input()
+        city = "Saudi"
         print("Enter Institute")
-        institute = input()
-        SignUp(client_socket, username, password, name, email, age, gender, status, city, institute)
+        # institute = input()
+        institute = "ITI"
+        SignUp(client_socket, username, password, email, name, age, gender, status, city, institute)
     else:
         print("For exiting press -1 else,",end="")
         print("Enter username :")
-        username = input()
+        # username = input()
+
         print("Enter password")
-        password = input()
+        # password = input()
+
         Login(client_socket, username, password)
     
-    # NewTweet(client_socket)
         if username== "-1":
             break
         else:
@@ -66,18 +78,21 @@ while True:
             print("Enter b for searching a person")
             print("Enter c for deleting follower")
             print("Enter n for new tweet")
+            print("Enter f to follow someone")
             print("Enter d for log out")
-            while True:    
+            while True:   
+                print("Enter your query") 
                 query = input()
                 if query =="a":
                     NewTweet(client_socket,username)
                 if query =="b":
+                    username = input("Enter the username of the person: ")
                     SearchPerson(client_socket,username)
                 if query =="c":
                     DeleteFollower(client_socket,username)
-                if query == "n":
-                    NewTweet(client_socket)
+                if query =="f":
+                    username = input("Enter the username of the person: ")
+                    Follow(client_socket, username)
                 if query == "d":
                     LogOut(client_socket,username)
-                else:
-                    break
+            

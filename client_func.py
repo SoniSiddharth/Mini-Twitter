@@ -2,9 +2,9 @@ import pickle
 from classes import *
 BUFFERSIZE = 6400
     
-def SignUp(client_socket, username, password, name, email, age, gender, status, city, institute):
+def SignUp(client_socket, username, password, email, name, age, gender, status, city, institute):
     #client to server
-    new_signup = signup("SignUp",username, password, name, email, age, gender, status, city, institute, 0)
+    new_signup = signup("SignUp",username, password, email, name, age, gender, status, city, institute, 0)
     data = pickle.dumps(new_signup)
     client_socket.send(data)
     
@@ -36,7 +36,7 @@ def Login(client_socket, username, password):
         print("Login Succesful")
     return data.flag
     
-def NewTweet(client_socket):
+def NewTweet(client_socket, username):
     tweet_msg = input("Enter New tweet: ")
     hashtags = input("Provide the hashtags related to the above tweet (separated by space): ")
     tags = list(hashtags.split())
@@ -69,7 +69,7 @@ def DeleteFollower(client_socket ,follower):
         reply=client_socket.recv(BUFFERSIZE) 
     data=pickle.loads(reply)
     if(data.flag==1):
-        print("Follower {%s} unfollowed".follower)#syntax check
+        print("Follower", follower, "unfollowed")#syntax check
 
 def ShowAllFollowers(client_socket, username):
     arr=list()
@@ -109,17 +109,17 @@ def Refresh(client_socket):
         #print whatever we want from data
     
 
-def SearchPerson(name,client_socket):
+def SearchPerson(client_socket, name):
     #client to server
-    msg=searchperson("SearchPerson",name,name,"","","","","")
-    data=pickle.dumps(msg)
+    msg = searchperson("SearchPerson",name,name,"","","","","",0)
+    data = pickle.dumps(msg)
     client_socket.send(data)
 
     #server to client
-    reply=client_socket.recv(BUFFERSIZE)
+    reply = client_socket.recv(BUFFERSIZE)
     while(len(reply)==0):
-        reply=client_socket.recv(BUFFERSIZE) 
-    data=pickle.loads(reply)
+        reply = client_socket.recv(BUFFERSIZE) 
+    data = pickle.loads(reply)
     if(len(data.name)>0 or len(data.username)>0):
         print("Name: ",data.name)
         print("Username: ",data.username)
@@ -130,6 +130,25 @@ def SearchPerson(name,client_socket):
         print("Education: ",data.institute)
     else:
         print("No such user")
+
+def Follow(client_socket,username):
+    #check if username to be followed exists
+    msg=follow("Follow",username,username)
+    data=pickle.dumps(msg)
+    client_socket.send(data)
+
+    reply = client_socket.recv(BUFFERSIZE)
+    while(len(reply)==0):
+        reply = client_socket.recv(BUFFERSIZE) 
+    data = pickle.loads(reply)
+    if(data.flag==0):
+        print("Invalid name/username")
+    else:
+        print("Following ",username)
+
+def SearchByHashtag(client_co):
+
+
 
 def LogOut():
     pass

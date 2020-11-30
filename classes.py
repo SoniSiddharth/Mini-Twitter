@@ -44,6 +44,7 @@ class newtweet():
         self.message = message
         self.hashtags = hashtags
         self.flag=flag
+
     def send(self,conn):
         a = pickle.dumps(self)
         conn.send(a)
@@ -104,7 +105,7 @@ class logout:
         return b
 
 class searchperson():
-    def __init__(self,func,username,name,age,gender,status,city,institute):
+    def __init__(self,func,username,name,age,gender,status,city,institute,flag):
         self.func=func
         self.username=username
         self.name=name
@@ -113,6 +114,7 @@ class searchperson():
         self.status=status
         self.city=city
         self.institute=institute
+        self.flag = flag
     def send(self,conn):
         a = pickle.dumps(self)
         conn.send(a)
@@ -120,3 +122,9 @@ class searchperson():
         data = conn.recv(BUFFERSIZE)
         b = pickle.loads(data)
         return b
+
+class follow:
+    def __init__(self, func, username, name):
+        self.func = func
+        self.username = username
+        self.name = name
