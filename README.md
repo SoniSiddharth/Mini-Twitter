@@ -14,11 +14,20 @@ A basic and user friendly twitter in python3 and MySQL server database in the ba
 ## Usage
 
 1. Run MySQL server as Administrator and run the following queries for database setup (NOTE: Use exact names as specified below) -
+    - create database
 
-`$ create database Minitweet`<br />
-`$ use Minitweet`<br />
-`$ create table Users ( Username varchar(50) NOT NULL UNIQUE, Password varchar(50), Email varchar(50), Name varchar(50), Age int, Gender varchar(2), Status varchar(50), City varchar(50), Institute varchar(50));`<br />
-`$ create table Tweets ( Username varchar(50), TweetID varchar(20), TweetMessage varchar(500), Hashtag1 varchar(30), Hashtag2 varchar(30), Hashtag3 varchar(30), Hashtag4 varchar(30), Hashtag5 varchar(30), Retweets int DEFAULT 0);`<br />
+    `$ create database Minitweet`<br />
+    - change database
+
+    `$ use Minitweet`<br />
+    
+    create table Users
+
+    `$ create table Users ( Username varchar(50) NOT NULL UNIQUE, Password varchar(50), Email varchar(50), Name varchar(50), Age int, Gender varchar(2), Status varchar(50), City varchar(50), Institute varchar(50));`<br />
+    
+    create table Tweets
+    
+    `$ create table Tweets ( Username varchar(50), TweetID varchar(20), TweetMessage varchar(500), Hashtag1 varchar(30), Hashtag2 varchar(30), Hashtag3 varchar(30), Hashtag4 varchar(30), Hashtag5 varchar(30), Retweets int DEFAULT 0);`<br />
 
 2. Open a terminal and run the server with following commmand and enter the port number when asked - 
 `$ python3 server.py`
@@ -33,13 +42,13 @@ A basic and user friendly twitter in python3 and MySQL server database in the ba
 ## Architecture and Communication
 
 <p align="center">
-  <img width="500" src="images/architecture.png">
+  <img width="500" src="images/architecture.PNG">
 </p>
 
 ---
 
 <p align="center">
-  <img width="500" src="images/communication.png">
+  <img width="500" src="images/communication.PNG">
 </p>
 
 ---
