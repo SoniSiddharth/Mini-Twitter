@@ -23,7 +23,7 @@ def SignUp(client_socket, username, password, email, name, age, gender, status, 
 
 def Login(client_socket, username, password):
     #client to server
-    credentials = login("Login",username, password,list(),0)            #here
+    credentials = login("Login",username, password,list(),0)            
     data = pickle.dumps(credentials)
     client_socket.send(data)
     
@@ -62,24 +62,37 @@ def NewTweet(client_socket, username):
     return
 
 
+def Unfollow(client_socket ,following):
+    #client to server
+    msg=unfollow("Unfollow",following,0)
+    data=pickle.dumps(msg)
+    client_socket.send(data)
+    
+    #server's reply
+    reply=client_socket.recv(BUFFERSIZE)
+    while(len(reply)==0):
+        reply=client_socket.recv(BUFFERSIZE) 
+    data=pickle.loads(reply)
+    if(data.flag==1):
+        print(following, "unfollowed")
+
 def DeleteFollower(client_socket ,follower):
     #client to server
     msg=deletefollower("DeleteFollower",follower,0)
     data=pickle.dumps(msg)
     client_socket.send(data)
     
-    #server to client
+    #server's reply
     reply=client_socket.recv(BUFFERSIZE)
     while(len(reply)==0):
         reply=client_socket.recv(BUFFERSIZE) 
     data=pickle.loads(reply)
     if(data.flag==1):
-        print("Follower", follower, "unfollowed")#syntax check
+        print(follower, "deleted")
 
 def ShowAllFollowers(client_socket, username):
     arr=list()
-    msg=showallfollowers("ShowAllFollowers",arr)
-    #client to server
+    msg=showallfollowers("ShowAllFollowers",arr,0)
     data=pickle.dumps(msg)
     client_socket.send(data)
     
@@ -88,12 +101,13 @@ def ShowAllFollowers(client_socket, username):
     while(len(reply)==0):
         reply=client_socket.recv(BUFFERSIZE) 
     data=pickle.loads(reply)
-    names=data.arr #want the list in data to be stored in var names, check syntax
+    names=data.arr 
     if len(names)==0:
         print("No followers")
+        # return 0
     else:
         for name in names:
-            print(name)
+            print(name[0])
 
 def Refresh(client_socket):
     #client to server
@@ -149,7 +163,7 @@ def Follow(client_socket,username):
     data = pickle.loads(reply)
     if(data.flag==0):
         print("Invalid name/username")
-    else:
+    else: #if the username existed, then he/she was followed 
         print("Following ",username)
 
 def SearchByHashtag(client_socket, hashtag):
@@ -225,7 +239,6 @@ def EnterChatRoom(client_socket):
                 sys.stdout.write(message+'\n') 
                 sys.stdout.flush() 
                 
-
         if flag==1:
             break
     sys.stdout.write("Chat room exited\n") 

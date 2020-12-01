@@ -26,7 +26,7 @@ client_socket.connect((target_ip,int(target_port)))
 #     print("Could not open application")
 # else:
 #     print(str(reply_from_server.decode('ascii')))    
-username ="jinx"
+username ="alexandra"
 password ="b"
 while True:
     start = int(input("For new user sign up press 0 and for login press 1 : "))
@@ -63,7 +63,7 @@ while True:
         SignUp(client_socket, username, password, email, name, age, gender, status, city, institute)
     else:
         print("For exiting press -1 else,",end="")
-        print("Enter username :")
+        print("\nEnter username :")
         # username = input()
 
         print("Enter password")
@@ -74,17 +74,19 @@ while True:
         if username== "-1":
             break
         else:
-            print("You are logged in successfully")
-            print("Enter r for refresh tweets")
+            print("Enter r to refresh tweets")
             print("Enter s for searching a person")
             print("Enter d for deleting follower")
             print("Enter n for new tweet")
             print("Enter f to follow someone")
+            print("Enter show to show all followers")
             print("Enter h to search by hashtag")
             print("Enter t for trending hashtags")
             print("Enter c to enter chat room")
             print("Enter re to retweet a tweet")
             print("Enter o for log out")
+            print("Enter u to unfollow")
+            print("Enter remove to delete follower")
             while True:   
                 print("Enter your query") 
                 query = input()
@@ -93,8 +95,9 @@ while True:
                 if query =="b":
                     username = input("Enter the username of the person: ")
                     SearchPerson(client_socket,username)
-                if query =="c":
-                    DeleteFollower(client_socket,username)
+                if query =="u":
+                    username=input("Enter the username to unfollow")
+                    Unfollow(client_socket,username)
                 if query=="n":
                     NewTweet(client_socket, username)
                 if query =="f":
@@ -110,5 +113,10 @@ while True:
                 if query=="re":
                     id=input("Enter tweet id: ")
                     Retweet(client_socket,id)
+                if query=="show":
+                    ShowAllFollowers(client_socket,username)
+                if query=="remove":
+                    username=input("Enter follower's username")
+                    DeleteFollower(client_socket,username)
                 if query == "d":
                     LogOut(client_socket,username)

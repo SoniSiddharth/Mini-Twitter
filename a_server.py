@@ -1,4 +1,4 @@
-from client_func import EnterChatRoom
+from client_func import DeleteFollower, EnterChatRoom
 import socket
 import os
 import time
@@ -8,7 +8,7 @@ from classes import *
 from server_func import *
 from globalvars import *
 from _thread import *
-# import lepl.apps.rfc3696
+
 
 UniqueTweets = 1
 
@@ -19,60 +19,59 @@ port = int(input('Enter desired port --> '))
 server_socket.bind((ip,port))
 
 server_socket.listen(100)
-# BUFFERSIZE = 64000
+BUFFERSIZE = 64000
 print('Running on IP: '+ip)
 print('Running on port: '+str(port))
 
 # Connecting with database
-# mydb = mysql.connector.connect(host="localhost",
-#                                 user="root",
-#                                 password="123456789",
-#                                 database="Minitweet",
-#                                 )
+mydb = mysql.connector.connect(host="localhost",
+                                user="root",
+                                password="123456789",
+                                database="Minitweet",
+                                )
 list_of_clients = []
-chatroom_clients = []
+chatroom_clients = [] #list of clients currently in the chatroom
 
-def clientthread(conn, addr): 
-	msg = conn.recv(BUFFERSIZE)
-	while(len(msg)==0):
-		msg=conn.recv(BUFFERSIZE)
+def clientthread(conn, addr): #server assigns a thread to every client connection
+
+	msg = conn.recv(BUFFERSIZE) #server can wait indefinitely
+	# while(len(msg)==0):
+	# 	msg=conn.recv(BUFFERSIZE)
 	data=pickle.loads(msg)
 	query = data.func
 
 	if(query=="SignUp"):
 		SignUp(conn,addr,data)
-		# result = Login(conn)
-		# continue
-		# conn.close()
 	else:
 		flag = 0
 		while(flag==0):#wait until user logs in successfully
 			if(query=="Login"):
 				returnedArr = Login(conn, data)
-				if (returnedArr[-1]==1):
+				if (returnedArr[-1]==1): #successful login
 					flag=1									
 					break
-			else:
-				print("please login first")
+			else:  							#if flag=0 and user sends some other query, then he/she should be prompted to login first
+				print("please login first") 
 				msg = conn.recv(BUFFERSIZE)
 				data=pickle.loads(msg)
 				query = data.func
+
 		username = returnedArr[0].username
-		print(username)
-		while True:
+		# print(username)
+		while True: 
 			msg = conn.recv(BUFFERSIZE)
-			while len(msg)==0:
-				msg = conn.recv(BUFFERSIZE)
-			# print(msg)
+			# while len(msg)==0:
+			# 	msg = conn.recv(BUFFERSIZE)
 			data=pickle.loads(msg)
 			query = data.func
 			if(query=="NewTweet"):
 				NewTweet(conn,username, data)
+			elif(query == "Unfollow"):
+				Unfollow(conn,username,data)
 			elif(query == "DeleteFollower"):
-				print("deleting follower")
-				DeleteFollower(conn,addr,username,data)
-			elif(query == "ShowAllFollowes"):
-				ShowAllFollowers(conn, addr, username, data)
+    			DeleteFollower(conn,username,data)
+			elif(query == "ShowAllFollowers"):
+				ShowAllFollowers(conn, username, data)
 			elif(query == "SearchPerson"):
 				SearchPerson(conn, addr, username, data)
 			elif(query =="Follow"):
@@ -99,7 +98,7 @@ while True:
 	list_of_clients.append(conn) 
 
 	print (str(addr[0]) + str(addr[1]) + " connected") 
-	start_new_thread(clientthread,(conn,addr))
+	start_new_thread(clientthread,(conn,addr)) #allocate a new thread to this connection
 server_socket.close()
 
 
