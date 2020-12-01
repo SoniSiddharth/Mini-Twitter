@@ -136,10 +136,11 @@ def NewTweet(conn,username, msg):
 				mydb.commit()
 				print("Tag added")
 	#Tell the client that Tweet was succesful
-	reply=newtweet("","","",1)
-	data=pickle.dumps(reply)
-	conn.send(data)
+	# reply=newtweet("","","",1)
+	# data=pickle.dumps(reply)
+	# conn.send(data)
 	print("Done tweet")
+	return tweet_id
 	
 def DeleteFollower(conn, addr,username, data):
 	follower=data.follower
@@ -297,21 +298,33 @@ def EnterChatRoom(conn, addr, data, chatroom_clients, username):
 
 def Retweet(conn, id,username):
 	#get the tweet to be retweeted
-	query="SELECT * FROM Tweets where TweetID='" +str(id)+"'"
+	print(id)
+	print(type(id))
+	query="SELECT * FROM Tweets where TweetID=" +str(id)
 	mycursor=mydb.cursor()
 	mycursor.execute(query)
 	result=mycursor.fetchall()
 	#increase the retweets of this particular tweet
 	query = "UPDATE Tweets SET Retweets = %s where TweetID=%s"
 	mycursor = mydb.cursor()
-	val = (str(result[0][]), str(tag))
+	print(result)
+	val = (str(int(result[0][8])+1), str(id))
 	mycursor.execute(query, val)
 	mydb.commit()
-
-
 	#update the message and make a new tweet (retweet) by you
-	msg=result[0][2]
-	msg="Retweet by"+str(username)+str(msg)
-	NewTweet(conn,username,msg)
+	hashtags=[]
+	for i in range(5):
+		hashtags.append(result[0][3+i])
+	message=result[0][2]
+	message="Retweet by "+str(username)+"\n"+str(message)
+	msg = newtweet("",message,hashtags,0)
+	#make a new tweet and notify client
+	tweet_id=NewTweet(conn,username,msg)
+	#send the new tweet to the client as a newtweet object
+	reply=newtweet("",message,hashtags,0)
+	data=pickle.dumps(reply)
+	conn.send(data)
+
+
 
 

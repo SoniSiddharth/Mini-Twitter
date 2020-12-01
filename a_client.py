@@ -26,7 +26,7 @@ client_socket.connect((target_ip,int(target_port)))
 #     print("Could not open application")
 # else:
 #     print(str(reply_from_server.decode('ascii')))    
-username ="alexandra"
+username ="jinx"
 password ="b"
 while True:
     start = int(input("For new user sign up press 0 and for login press 1 : "))

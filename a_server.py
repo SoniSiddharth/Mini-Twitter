@@ -87,7 +87,7 @@ def clientthread(conn, addr):
 			elif(query == "Refresh"):
 				Refresh(conn, username, data)
 			elif(query == "Retweet"):
-    				Retweet(conn,id,username)
+    				Retweet(conn,data.id,username)
 			elif(query == "Logout"):
 				# Logout(conn, addr, username, data)
 				conn.send(bytes("bye"))

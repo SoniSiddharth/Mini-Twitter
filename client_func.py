@@ -237,11 +237,25 @@ def Retweet(client_socket, id):
     data=pickle.dumps(msg)
     client_socket.send(data)
 
-    #get the retweeted tweet and print it
+    #get confirmation of new tweet, this comes from newtweet function
     reply=client_socket.recv(BUFFERSIZE)
+    while(len(reply)==0):
+        reply=client_socket.recv(BUFFERSIZE) 
     data=pickle.loads(reply)
-    print(data)
-    # print("Retweeted")
+    if(data.flag==1):
+        print("Could not Tweet, try again later")
+    else:
+        # #get the retweeted tweet and print it, this comes from retweet function
+        # reply=client_socket.recv(BUFFERSIZE)
+        # while(len(reply)==0):
+        #     reply=client_socket.recv(BUFFERSIZE) 
+        # data=pickle.loads(reply)
+        print("Message",data.message)
+        for i in range(len(data.hashtags)):
+            if(data.hashtags[i]!="NULL"):
+                print(data.hashtags[i])
+
+    
 
 
 

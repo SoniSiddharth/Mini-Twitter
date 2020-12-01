@@ -150,4 +150,3 @@ class retweet:
     def __init__(self,func,id):
         self.func=func
         self.id=id
-        
