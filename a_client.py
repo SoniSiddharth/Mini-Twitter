@@ -81,6 +81,7 @@ while True:
             print("Enter f to follow someone")
             print("Enter x to search by hashtag")
             print("Enter t for trending hashtags")
+            print("Enter chat to enter chat room")
             print("Enter d for log out")
             while True:   
                 print("Enter your query") 
@@ -102,6 +103,7 @@ while True:
                     SearchByHashtag(client_socket,hashtag)
                 if query=="t":
                     TrendingHashtags(client_socket)
+                if query=="chat":
+                    EnterChatRoom(client_socket)
                 if query == "d":
                     LogOut(client_socket,username)
-            

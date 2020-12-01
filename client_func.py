@@ -1,4 +1,6 @@
 import pickle
+import sys
+import select
 from classes import *
 BUFFERSIZE = 6400
     
@@ -191,6 +193,39 @@ def TrendingHashtags(client_socket):
     print("Following are the top 5 trending hashtags")
     for j in result:
         print(j)
+
+def EnterChatRoom(client_socket):
+
+    #notify server
+    flag=0
+    message = enterchatroom("EnterChatRoom")
+    data = pickle.dumps(message)
+    client_socket.send(data)
+
+    while True: 
+        sockets_list = [sys.stdin, client_socket] 
+        read_sockets,write_socket, error_socket = select.select(sockets_list,[],[]) 
+
+        for socks in read_sockets: 
+            if socks == client_socket: 
+                message = socks.recv(2048) 
+                print (message.decode('ascii')) 
+            else: 
+                message = sys.stdin.readline().strip()
+                if(str(message)=="exit"):
+                    print("exiting")
+                    flag=1
+                    break
+                client_socket.send(message.encode('ascii')) 
+                sys.stdout.write("<You>\n") 
+                sys.stdout.write(message+'\n') 
+                sys.stdout.flush() 
+                
+
+        if flag==1:
+            break
+    sys.stdout.write("Chat room exited\n") 
+    sys.stdout.flush() 
 
 def LogOut():
     pass

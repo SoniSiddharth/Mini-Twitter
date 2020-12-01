@@ -140,3 +140,7 @@ class trendinghashtags:
     def __init__(self, func, hashtags):
         self.func = func
         self.hashtags = hashtags
+
+class enterchatroom:
+    def __init__(self,func):
+        self.func=func
