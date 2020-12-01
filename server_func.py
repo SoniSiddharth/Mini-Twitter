@@ -136,9 +136,9 @@ def NewTweet(conn,username, msg):
 				mydb.commit()
 				print("Tag added")
 	#Tell the client that Tweet was succesful
-	# reply=newtweet("","","",1)
-	# data=pickle.dumps(reply)
-	# conn.send(data)
+	reply=newtweet("","","",1)
+	data=pickle.dumps(reply)
+	conn.send(data)
 	print("Done tweet")
 	return tweet_id
 	
@@ -320,10 +320,16 @@ def Retweet(conn, id,username):
 	msg = newtweet("",message,hashtags,0)
 	#make a new tweet and notify client
 	tweet_id=NewTweet(conn,username,msg)
-	#send the new tweet to the client as a newtweet object
-	reply=newtweet("",message,hashtags,0)
-	data=pickle.dumps(reply)
-	conn.send(data)
+
+	#send the new tweet to the client as a newtweet object, only after client is ready
+	client_reply=conn.recv(BUFFERSIZE)
+	while(len(client_reply)==0):
+		client_reply=conn.recv(BUFFERSIZE)
+	if(client_reply.decode('ascii')=="1"):
+		#now send
+		reply=newtweet("",message,hashtags,1)
+		data=pickle.dumps(reply)
+		conn.send(data)
 
 
 
