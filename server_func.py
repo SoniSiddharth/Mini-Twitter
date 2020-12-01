@@ -2,6 +2,7 @@ import mysql.connector
 from classes import *
 from globalvars import *
 
+# signup function
 def SignUp(conn, addr, data):
 	# emailchecker = lepl.apps.rfc3696.Email()
 	# if not emailchecker(email):
@@ -20,7 +21,13 @@ def SignUp(conn, addr, data):
 	mydb.commit()
 
 	mycursor = mydb.cursor() 
-	query = "CREATE TABLE "+ str(data.username)+" (Username varchar(20), FollowBack INT)"
+	query = "CREATE TABLE "+ str(data.username) + "_followers"+" (Username varchar(20))"
+	# val = tuple(data.username,)
+	mycursor.execute(query)
+	mydb.commit()
+
+	mycursor = mydb.cursor() 
+	query = "CREATE TABLE "+ str(data.username) + "_following"+" (Username varchar(20))"
 	# val = tuple(data.username,)
 	mycursor.execute(query)
 	mydb.commit()
@@ -31,18 +38,47 @@ def SignUp(conn, addr, data):
 	conn.send(msg)
 	return "Done"
 
+def ShowTweets(username):#returns a list of recent tweets to the login function
+	query="SELECT Username FROM "+str(username)+"_following"
+	mycursor=mydb.cursor()
+	mycursor.execute(query)
+	
+	names=mycursor.fetchall()
+	dic={}
+	
+	for name in names:
+		dic[name[0]]=1
+		
+	query="SELECT * FROM Tweets ORDER BY TweetID DESC" #sort by tweet id in descending order
+	val=() #not sure about syntax
+	mycursor=mydb.cursor()
+	mycursor.execute(query,val) 
+	results=mycursor.fetchall()
+	
+	ls=list()
+	count=0
+	for row in results:
+		if(count==5):
+			break
+		if(row[0] in dic):
+			ls.append(row)
+			count+=1   
+	return ls
+
+
 def Login(conn, loginData):
 	query = "SELECT * FROM Users where Username=" + "'" +str(loginData.username)+ "'" +" AND Password ="+ "'"+ str(loginData.password)+"'"
 	# val = (loginData.username, loginData.password)
-	print(query)
 	mycursor = mydb.cursor()
 	mycursor.execute(query)
 	result = mycursor.fetchall()
 
 	if(len(result)==0):#not sure how to see if result is empty or not
-		reply=login("","","",0)
-	else:
-		reply=login("","","",1)
+		reply=login("","","","",0)
+	else:#if login was succesful, call show tweets functions and get latest 5(or less) tweets 
+		tweets=list()
+		tweets=ShowTweets(loginData.username)
+		reply=login("","","",tweets,1)
 	
 	data=pickle.dumps(reply)
 	conn.send(data)
@@ -54,7 +90,7 @@ def Login(conn, loginData):
 		return_arr.append(1)
 	return return_arr
 
-def NewTweet(conn, addr,username, msg):
+def NewTweet(conn,username, msg):
 	#getting tweet ID
 	query = "Select TweetID from Tweets"
 	mycursor = mydb.cursor()
@@ -68,8 +104,8 @@ def NewTweet(conn, addr,username, msg):
 	tag_arr = msg.hashtags
 	while(len(tag_arr)<5):
 		tag_arr.append("NULL")            
-	query = "INSERT INTO Tweets (Username, TweetID, TweetMessage, Hashtag1, Hashtag2, Hashtag3, Hashtag4, Hashtag5) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-	val = (username, tweet_id, msg.message, msg.hashtags[0], msg.hashtags[1], msg.hashtags[2], msg.hashtags[3], msg.hashtags[4])
+	query = "INSERT INTO Tweets (Username, TweetID, TweetMessage, Hashtag1, Hashtag2, Hashtag3, Hashtag4, Hashtag5,Retweets) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+	val = (username, tweet_id, msg.message, msg.hashtags[0], msg.hashtags[1], msg.hashtags[2], msg.hashtags[3], msg.hashtags[4],0)
 	mycursor = mydb.cursor()
 	mycursor.execute(query, val)
 	mydb.commit()
@@ -107,11 +143,16 @@ def NewTweet(conn, addr,username, msg):
 	
 def DeleteFollower(conn, addr,username, data):
 	follower=data.follower
-	query="DELETE FROM "+str(username)+" WHERE Username ='" + str(data.follower) +"'"
+	query="DELETE FROM "+str(username) + "_following"+" WHERE Username ='" + str(data.follower) +"'"
 	mycursor=mydb.cursor()
 	mycursor.execute(query)
 	mydb.commit()
 	
+	query="DELETE FROM "+str(data.follower)+"_followers"+" WHERE Username ='" + str(username) +"'"
+	mycursor=mydb.cursor()
+	mycursor.execute(query)
+	mydb.commit()
+
 	#Tell client that follower was succesfully deleted
 	reply=deletefollower("","",1)
 	data=pickle.dumps(reply)
@@ -120,7 +161,7 @@ def DeleteFollower(conn, addr,username, data):
 
 def ShowAllFollowers(conn, username, data):
 	query="SELECT Username FROM %s" #select all entries from Username column in the database of requesting user
-	val=(username,)
+	val=(username+"_followers",)
 	mycursor=mydb.cursor()
 	mycursor.execute(query,val)
 	arr=mycursor.fetchall()
@@ -130,34 +171,33 @@ def ShowAllFollowers(conn, username, data):
 	print("Followers list sent")
 	
 def Refresh(conn, username, data):
-	query="SELECT Username FROM %s"
-	val=(username,)
+	print(username)
+	query="SELECT Username FROM "+ username + "_following"
 	mycursor=mydb.cursor()
-	mycursor.execute(query,val)
+	mycursor.execute(query)
 	
 	names=mycursor.fetchall()
 	dic={}
 	for name in names:
-		dic[name]=1
-		
+		dic[name[0]]=1
 	query="SELECT * FROM Tweets ORDER BY TweetID DESC" #sort by tweet id in descending order
 	val=() #not sure about syntax
 	mycursor=mydb.cursor()
 	mycursor.execute(query,val) 
 	results=mycursor.fetchall()
-	
-	ls=list()
+	ls=[]
 	count=0
 	for row in results:
 		if(count==5):
 			break
-		if(dic[row[0]]==1):
+		if(row[0] in dic):
 			ls.append(row)
-			count+=1   
+			count+=1
 	if count==0:
 		reply=refresh("",ls,0)
 	else:
 		reply=refresh("",ls,5)
+	
 	data=pickle.dumps(reply)
 	conn.send(data)
 	
@@ -182,7 +222,12 @@ def SearchPerson(conn, addr, username, data):
 def Follow(conn, addr, username, data):
 	available = SearchPerson(conn, addr, username, data)
 	if (available==1):
-		query = "INSERT INTO "+ str(username) + " (Username)" + " VALUES("+ "'"+str(data.username)+"'" ")"
+		query = "INSERT INTO "+ str(username)+"_following" + " (Username)" + " VALUES("+ "'"+str(data.username)+"'" ")"
+		mycursor = mydb.cursor()
+		mycursor.execute(query)
+		mydb.commit()
+
+		query = "INSERT INTO "+ str(data.username)+"_followers" + " (Username)" + " VALUES("+ "'"+str(username)+"'" ")"
 		mycursor = mydb.cursor()
 		mycursor.execute(query)
 		mydb.commit()
@@ -249,3 +294,24 @@ def EnterChatRoom(conn, addr, data, chatroom_clients, username):
 		else: 
 			print("Connection broken")
 			chatroom_clients.remove(conn)
+
+def Retweet(conn, id,username):
+	#get the tweet to be retweeted
+	query="SELECT * FROM Tweets where TweetID='" +str(id)+"'"
+	mycursor=mydb.cursor()
+	mycursor.execute(query)
+	result=mycursor.fetchall()
+	#increase the retweets of this particular tweet
+	query = "UPDATE Tweets SET Retweets = %s where TweetID=%s"
+	mycursor = mydb.cursor()
+	val = (str(result[0][]), str(tag))
+	mycursor.execute(query, val)
+	mydb.commit()
+
+
+	#update the message and make a new tweet (retweet) by you
+	msg=result[0][2]
+	msg="Retweet by"+str(username)+str(msg)
+	NewTweet(conn,username,msg)
+
+

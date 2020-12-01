@@ -23,7 +23,7 @@ def SignUp(client_socket, username, password, email, name, age, gender, status, 
 
 def Login(client_socket, username, password):
     #client to server
-    credentials = login("Login",username, password,0)
+    credentials = login("Login",username, password,list(),0)            #here
     data = pickle.dumps(credentials)
     client_socket.send(data)
     
@@ -36,6 +36,9 @@ def Login(client_socket, username, password):
         print("Login failed, invalid credentials")
     else:
         print("Login Succesful")
+        print("Recent tweets from your following")
+        for tweet in data.tweets:
+            print(tweet)
     return data.flag
     
 def NewTweet(client_socket, username):
@@ -103,13 +106,14 @@ def Refresh(client_socket):
     reply=client_socket.recv(BUFFERSIZE)
     while(len(reply)==0):
         reply=client_socket.recv(BUFFERSIZE) 
-    data=pickle.loads(reply)
+    data = pickle.loads(reply)
     if(data.count==0):
         print("No new Tweets")
     else:
-        pass
-        #print whatever we want from data
-    
+        response = data.tweets
+        for j in response:
+            print(j)
+    return
 
 def SearchPerson(client_socket, name):
     #client to server
@@ -226,6 +230,20 @@ def EnterChatRoom(client_socket):
             break
     sys.stdout.write("Chat room exited\n") 
     sys.stdout.flush() 
+
+def Retweet(client_socket, id):
+    #ask server to update database
+    msg=retweet("Retweet",id)
+    data=pickle.dumps(msg)
+    client_socket.send(data)
+
+    #get the retweeted tweet and print it
+    reply=client_socket.recv(BUFFERSIZE)
+    data=pickle.loads(reply)
+    print(data)
+    # print("Retweeted")
+
+
 
 def LogOut():
     pass

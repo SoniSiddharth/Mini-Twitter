@@ -26,15 +26,16 @@ client_socket.connect((target_ip,int(target_port)))
 #     print("Could not open application")
 # else:
 #     print(str(reply_from_server.decode('ascii')))    
-username ="fweufe8339"
-password ="Bhadwa"
+username ="alexandra"
+password ="b"
 while True:
     start = int(input("For new user sign up press 0 and for login press 1 : "))
     
     if start==0:
         print("Enter username")
         # username = input()
-        username = "b" + str(random.randint(1,10000))
+        # username = "b" + str(random.randint(1,10000))
+        username="jinx"
         print("Enter password")
         # password = input()
         password = "b"
@@ -43,7 +44,7 @@ while True:
         email = "b@gmail.com"
         print("Enter name")
         # name = input()
-        name = "soni"
+        name = "ajinkya"
         print("Enter Age")
         # age = input()
         age = 2
@@ -74,20 +75,21 @@ while True:
             break
         else:
             print("You are logged in successfully")
-            print("Enter a for new Tweet")
-            print("Enter b for searching a person")
-            print("Enter c for deleting follower")
+            print("Enter r for refresh tweets")
+            print("Enter s for searching a person")
+            print("Enter d for deleting follower")
             print("Enter n for new tweet")
             print("Enter f to follow someone")
-            print("Enter x to search by hashtag")
+            print("Enter h to search by hashtag")
             print("Enter t for trending hashtags")
-            print("Enter chat to enter chat room")
-            print("Enter d for log out")
+            print("Enter c to enter chat room")
+            print("Enter re to retweet a tweet")
+            print("Enter o for log out")
             while True:   
                 print("Enter your query") 
                 query = input()
                 if query =="a":
-                    NewTweet(client_socket,username)
+                    Refresh(client_socket)
                 if query =="b":
                     username = input("Enter the username of the person: ")
                     SearchPerson(client_socket,username)
@@ -105,5 +107,8 @@ while True:
                     TrendingHashtags(client_socket)
                 if query=="chat":
                     EnterChatRoom(client_socket)
+                if query=="re":
+                    id=input("Enter tweet id: ")
+                    Retweet(client_socket,id)
                 if query == "d":
                     LogOut(client_socket,username)

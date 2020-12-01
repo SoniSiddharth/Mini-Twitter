@@ -46,11 +46,11 @@ def clientthread(conn, addr):
 		# conn.close()
 	else:
 		flag = 0
-		while(flag==0):
+		while(flag==0):#wait until user logs in successfully
 			if(query=="Login"):
 				returnedArr = Login(conn, data)
 				if (returnedArr[-1]==1):
-					flag=1
+					flag=1									
 					break
 			else:
 				print("please login first")
@@ -67,14 +67,12 @@ def clientthread(conn, addr):
 			data=pickle.loads(msg)
 			query = data.func
 			if(query=="NewTweet"):
-				NewTweet(conn,addr,username, data)
+				NewTweet(conn,username, data)
 			elif(query == "DeleteFollower"):
 				print("deleting follower")
 				DeleteFollower(conn,addr,username,data)
 			elif(query == "ShowAllFollowes"):
 				ShowAllFollowers(conn, addr, username, data)
-			elif(query == "Refresh"):
-				Refresh(conn, addr, username, data)
 			elif(query == "SearchPerson"):
 				SearchPerson(conn, addr, username, data)
 			elif(query =="Follow"):
@@ -86,6 +84,10 @@ def clientthread(conn, addr):
 			elif(query == "EnterChatRoom"):
 				chatroom_clients.append(conn)
 				EnterChatRoom(conn, addr, data, chatroom_clients, username)
+			elif(query == "Refresh"):
+				Refresh(conn, username, data)
+			elif(query == "Retweet"):
+    				Retweet(conn,id,username)
 			elif(query == "Logout"):
 				# Logout(conn, addr, username, data)
 				conn.send(bytes("bye"))
