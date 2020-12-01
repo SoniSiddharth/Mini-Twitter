@@ -4,68 +4,20 @@ from _thread import *
 import threading
 import pickle
 #Prasad127@
+import random
 # https://docs.google.com/document/d/1Q-nVq89qVQUU5DyaO6mRzTyLZm5R6URW4Xdqkk-VsOM/edit#heading=h.p2nityf5kx5q
-class authenticate:
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
-    
 
-class signup:
-    def __init__(self, username, password,name,email):
-        self.username = username
-        self.password = password
-        self.email = email
-        self.name = name
-         
-class tweet_info():
-    def __init__(self, message, hashtags):
-        self.message = message
-        self.hashtags = hashtags
 
-    
-def SignUp(client_socket, username, password, name, email):
-    client_socket.send(bytes("s"))
-    new_signup = signup(username, password, name, email)
-    data = pickle.dumps(new_signup)
-    client_socket.send(data)
-    return
-
-def NewTweet(client_socket):
-    tweet_msg = input("Enter New tweet: ")
-    hashtags = input("Provide the hashtags related to the above tweet (separated by space): ")
-    tags = list(hashtags.split())
-    
-    msg = tweet_info(tweet_msg, tags)
-    data = pickle.dumps(msg)
-    client_socket.send(data)
-
-def LoginCheck(client_socket, username, password):
-    credentials = authenticate(username, password)
-    data = pickle.dumps(credentials)
-    client_socket.send(data)
-
-def Refresh():
-    pass
-
-def ListFollowers():
-    pass
-
-def DeleteFollower(client_socket ,follower):
-    client_socket.send(bytes(follower))
-
-def LogOut():
-    pass
-def SearchPerson():
-    pass
+from classes import *
+from client_func import *    
 
 #opening twitter
-print("Opening Twitter ...")
+
 client_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 target_ip = "127.0.1.1"
 target_port = input('Enter port --> ')
 client_socket.connect((target_ip,int(target_port)))
-BUFFERSIZE = 64000
+# BUFFERSIZE = 64000
 # message = "Hello"
 # client_socket.send(message.encode('ascii'))
 # reply_from_server = client_socket.recv(BUFFERSIZE)
@@ -74,59 +26,97 @@ BUFFERSIZE = 64000
 #     print("Could not open application")
 # else:
 #     print(str(reply_from_server.decode('ascii')))    
-
-
+username ="alexandra"
+password ="b"
 while True:
     start = int(input("For new user sign up press 0 and for login press 1 : "))
     
     if start==0:
         print("Enter username")
-        username = input()
+        # username = input()
+        # username = "b" + str(random.randint(1,10000))
+        username="jinx"
         print("Enter password")
-        password = input()
-        print("Enter name")
-        name = input()
+        # password = input()
+        password = "b"
         print("Enter email")
-        email = input()
-        SignUp(client_socket, username, password, name, email)
+        # email = input()
+        email = "b@gmail.com"
+        print("Enter name")
+        # name = input()
+        name = "ajinkya"
+        print("Enter Age")
+        # age = input()
+        age = 2
+        print("Enter Gender")
+        # gender = input()
+        gender = "F"
+        print("Enter Status")
+        # status = input()
+        status = "single"
+        print("Enter City")
+        # city = input()
+        city = "Saudi"
+        print("Enter Institute")
+        # institute = input()
+        institute = "ITI"
+        SignUp(client_socket, username, password, email, name, age, gender, status, city, institute)
     else:
         print("For exiting press -1 else,",end="")
-        print("Enter username :")
-        username = input()
+        print("\nEnter username :")
+        # username = input()
+
         print("Enter password")
-        password = input()
-        LoginCheck(client_socket, username, password)
+        # password = input()
+
+        Login(client_socket, username, password)
     
-    # NewTweet(client_socket)
-    if username== "-1":
-        break
-    else:
-        print("You are logged in successfully")
-        print("Enter a for new Tweet")
-        print("Enter b for searching a person")
-        print("Enter c for deleting follower")
-        print("Enter n for new tweet")
-        print("Enter d for log out")
-        while True:    
-            query = input()
-            if query =="a":
-                
-                NewTweet(client_socket,username)
-            if query =="b":
-                SearchPerson(client_socket,username)
-            if query =="c":
-                DeleteFollower(client_socket,username)
-            if query == "n":
-                NewTweet(client_socket)
-            if query == "d":
-                LogOut(client_socket,username)
-            else:
-                break
-
-client_socket.close()
-
-
-            
-
-
-    
+        if username== "-1":
+            break
+        else:
+            print("Enter r to refresh tweets")
+            print("Enter s for searching a person")
+            print("Enter d for deleting follower")
+            print("Enter n for new tweet")
+            print("Enter f to follow someone")
+            print("Enter show to show all followers")
+            print("Enter h to search by hashtag")
+            print("Enter t for trending hashtags")
+            print("Enter c to enter chat room")
+            print("Enter re to retweet a tweet")
+            print("Enter o for log out")
+            print("Enter u to unfollow")
+            print("Enter remove to delete follower")
+            while True:   
+                print("Enter your query") 
+                query = input()
+                if query =="a":
+                    Refresh(client_socket)
+                if query =="b":
+                    username = input("Enter the username of the person: ")
+                    SearchPerson(client_socket,username)
+                if query =="u":
+                    username=input("Enter the username to unfollow")
+                    Unfollow(client_socket,username)
+                if query=="n":
+                    NewTweet(client_socket, username)
+                if query =="f":
+                    username = input("Enter the username of the person: ")
+                    Follow(client_socket, username)
+                if query=="x":
+                    hashtag=input("Enter hashtag ")
+                    SearchByHashtag(client_socket,hashtag)
+                if query=="t":
+                    TrendingHashtags(client_socket)
+                if query=="chat":
+                    EnterChatRoom(client_socket)
+                if query=="re":
+                    id=input("Enter tweet id: ")
+                    Retweet(client_socket,id)
+                if query=="show":
+                    ShowAllFollowers(client_socket,username)
+                if query=="remove":
+                    username=input("Enter follower's username")
+                    DeleteFollower(client_socket,username)
+                if query == "d":
+                    LogOut(client_socket,username)
