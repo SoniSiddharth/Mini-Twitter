@@ -143,45 +143,54 @@ def NewTweet(conn,username, msg):
 	print("Done tweet")
 	
 def Unfollow(conn,username, data):
-    
-	#remove the person(to be unfollowed by curr client) from the following of username
-	query="DELETE FROM "+str(username) + "_following"+" WHERE Username ='" + str(data.following) +"'"
-	mycursor=mydb.cursor()
-	mycursor.execute(query)
-	mydb.commit()
-	
-	#remove username from the followers of the person
-	query="DELETE FROM "+str(data.following)+"_followers"+" WHERE Username ='" + str(username) +"'"
-	mycursor=mydb.cursor()
-	mycursor.execute(query)
-	mydb.commit()
+	try:
+		#remove the person(to be unfollowed by curr client) from the following of username
+		query="DELETE FROM "+str(username) + "_following"+" WHERE Username ='" + str(data.following) +"'"
+		mycursor=mydb.cursor()
+		mycursor.execute(query)
+		mydb.commit()
+		
+		#remove username from the followers of the person
+		query="DELETE FROM "+str(data.following)+"_followers"+" WHERE Username ='" + str(username) +"'"
+		mycursor=mydb.cursor()
+		mycursor.execute(query)
+		mydb.commit()
 
-	#Tell client that the person was succesfully unfollowed
-	reply=unfollow("","",1)
-	data=pickle.dumps(reply)
-	conn.send(data)
-	# print("Unfollowed ",data.following)
+		#Tell client that the person was succesfully unfollowed
+		reply=unfollow("","",1)
+		data=pickle.dumps(reply)
+		conn.send(data)
+		# print("Unfollowed ",data.following)
+	except:
+		reply = unfollow("Unfollow","",0)
+		data = pickle.dumps(reply)
+		conn.send(data)
 
 
 def DeleteFollower(conn,username, data):
-    
-	#remove the person(follower to be deleted by curr client) from the followers of username
-	query="DELETE FROM "+str(username) + "_followers"+" WHERE Username ='" + str(data.follower) +"'"
-	mycursor=mydb.cursor()
-	mycursor.execute(query)
-	mydb.commit()
-	
-	#remove username from the person's following
-	query="DELETE FROM "+str(data.follower)+"_following"+" WHERE Username ='" + str(username) +"'"
-	mycursor=mydb.cursor()
-	mycursor.execute(query)
-	mydb.commit()
+	try:
+		#remove the person(follower to be deleted by curr client) from the followers of username
+		query="DELETE FROM "+str(username) + "_followers"+" WHERE Username ='" + str(data.follower) +"'"
+		mycursor=mydb.cursor()
+		mycursor.execute(query)
+		mydb.commit()
+		
+		#remove username from the person's following
+		query="DELETE FROM "+str(data.follower)+"_following"+" WHERE Username ='" + str(username) +"'"
+		mycursor=mydb.cursor()
+		mycursor.execute(query)
+		mydb.commit()
 
-	#Tell client that the person was succesfully unfollowed
-	reply=deletefollower("","",1)
-	data=pickle.dumps(reply)
-	conn.send(data)
-	# print("Deleted ",data.follower)
+		#Tell client that the person was succesfully unfollowed
+		reply=deletefollower("","",1)
+		data=pickle.dumps(reply)
+		conn.send(data)
+		# print("Deleted ",data.follower)
+	except:
+		reply = deletefollower("Unfollow","",0)
+		data = pickle.dumps(reply)
+		conn.send(data)
+
 
 def ShowAllFollowers(conn, username, data):
 	print("searching for :",username.strip())

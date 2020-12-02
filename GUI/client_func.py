@@ -64,10 +64,11 @@ def NewTweet(client_socket,tweet_msg,hashtags,username):
 
 def Unfollow(client_socket ,following):
     #client to server
+    print("in the unfollow")
     msg=unfollow("Unfollow",following,0)
     data=pickle.dumps(msg)
     client_socket.send(data)
-    
+    print("sent the data")
     #server's reply
     reply=client_socket.recv(BUFFERSIZE)
     # while(len(reply)==0):
@@ -108,7 +109,7 @@ def ShowAllFollowers(client_socket):
     print("Got the value")
     if len(names)==0:
         print("No followers")
-        # return 0
+        return 0
     else:
         arr = []
         for name in names:

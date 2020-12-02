@@ -100,6 +100,9 @@ def clientthread(conn, addr):
 				elif(query == "Retweet"):
 					print("Inside retweet")
 					Retweet(conn,data.id,username)
+				elif(query == "Unfollow"):
+					print("inside unfollow")
+					Unfollow(conn,username,data)
 				elif(query == "Logout"):
 					# Logout(conn, addr, username, data)
 					conn.send(bytes("bye"))

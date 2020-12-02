@@ -690,7 +690,7 @@ def Actionspage(username,arr):
 	Button(frame1,text="Search a person",command = aa).pack(side=LEFT)
 
 	unf1 = partial(Unfollow1,username)
-	Button(frame1,text="unfollow someone",command=unf1).pack(side=LEFT)
+	Button(frame1,text="unfollow",command=unf1).pack(side=LEFT)
 	sea1 = partial(searchbyhst1,username)
 	Button(frame1,text="Search by Hastag",command=sea1).pack(side=LEFT)
 
@@ -708,7 +708,7 @@ def Actionspage(username,arr):
 	rfrs = partial(refers2,username)
 	Button(frame2,text="Refresh",command=rfrs).pack(side=LEFT)
 	dflr = partial(Deleteflwr1,username)
-	Button(frame2, text="Unfollow",command=dflr).pack(side=LEFT)
+	Button(frame2, text="Delete Follower",command=dflr).pack(side=LEFT)
 
 	frame2.pack(side=TOP)
 	
