@@ -2,6 +2,12 @@ import mysql.connector
 from classes import *
 from globalvars import *
 
+mydb = mysql.connector.connect(host="localhost",
+								user="root",
+								password="123456789",
+								database="Minitweet",
+								)
+
 # signup function
 def SignUp(conn, addr, data):
 	
@@ -164,7 +170,7 @@ def Unfollow(conn,username, data):
 	reply=unfollow("","",1)
 	data=pickle.dumps(reply)
 	conn.send(data)
-	print("Unfollowed ",data.following)
+	# print("Unfollowed ",data.following)
 
 
 def DeleteFollower(conn,username, data):
@@ -185,7 +191,7 @@ def DeleteFollower(conn,username, data):
 	reply=deletefollower("","",1)
 	data=pickle.dumps(reply)
 	conn.send(data)
-	print("Deleted ",data.follower)
+	# print("Deleted ",data.follower)
 
 def ShowAllFollowers(conn, username, data):
 
@@ -292,7 +298,7 @@ def TrendingHashtags(conn, data):
 	mycursor.execute(query)
 	results=mycursor.fetchall()
 	arr = list() 
-	print(results)
+	# print(results)
 	counter = 0
 	for j in results:
 		if counter==5:
@@ -324,16 +330,18 @@ def EnterChatRoom(conn, addr, data, chatroom_clients, username):
 		if message:
 			print ("<" + username + "> " + message.decode('ascii')) 
 			message_to_send = "<" + username + "> " + message.decode('ascii')
-			broadcast(message_to_send, conn, chatroom_clients) 
-
+			if (message.decode('ascii')=="exit"):
+				chatroom_clients.remove(conn)
+				break
+			else:
+				broadcast(message_to_send, conn, chatroom_clients) 
 		else: 
 			print("Connection broken")
-			chatroom_clients.remove(conn)
+			if conn in chatroom_clients:
+				chatroom_clients.remove(conn)
 
 def Retweet(conn, id,username):
 	#get the tweet to be retweeted
-	print(id)
-	print(type(id))
 	query="SELECT * FROM Tweets where TweetID=" +str(id)
 	mycursor=mydb.cursor()
 	mycursor.execute(query)
@@ -341,7 +349,6 @@ def Retweet(conn, id,username):
 	#increase the retweets of this particular tweet
 	query = "UPDATE Tweets SET Retweets = %s where TweetID=%s"
 	mycursor = mydb.cursor()
-	print(result)
 	val = (str(int(result[0][8])+1), str(id))
 	mycursor.execute(query, val)
 	mydb.commit()
@@ -357,10 +364,14 @@ def Retweet(conn, id,username):
 
 	#send the new tweet to the client as a newtweet object, only after client is ready
 	client_reply=conn.recv(BUFFERSIZE)
-	while(len(client_reply)==0):
-		client_reply=conn.recv(BUFFERSIZE)
+	# while(len(client_reply)==0):
+	# 	client_reply=conn.recv(BUFFERSIZE)
 	if(client_reply.decode('ascii')=="1"):
 		#now send
 		reply=newtweet("",message,hashtags,1)
 		data=pickle.dumps(reply)
 		conn.send(data)
+
+
+
+
