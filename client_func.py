@@ -12,8 +12,8 @@ def SignUp(client_socket, username, password, email, name, age, gender, status, 
     
     #server to client
     reply=client_socket.recv(BUFFERSIZE)
-    while(len(reply)==0):
-        reply=client_socket.recv(BUFFERSIZE) 
+    # while(len(reply)==0):
+    #     reply=client_socket.recv(BUFFERSIZE) 
     data=pickle.loads(reply)
     if(data.flag==0):
         print("Weak password")
@@ -29,8 +29,8 @@ def Login(client_socket, username, password):
     
     #server to client
     reply=client_socket.recv(BUFFERSIZE)
-    while(len(reply)==0):
-        reply=client_socket.recv(BUFFERSIZE) 
+    # while(len(reply)==0):
+    #     reply=client_socket.recv(BUFFERSIZE) 
     data=pickle.loads(reply)
     if(data.flag==0):
         print("Login failed, invalid credentials")
@@ -52,8 +52,8 @@ def NewTweet(client_socket, username):
     
     #server to client
     reply=client_socket.recv(BUFFERSIZE)
-    while(len(reply)==0):
-        reply=client_socket.recv(BUFFERSIZE) 
+    # while(len(reply)==0):
+    #     reply=client_socket.recv(BUFFERSIZE) 
     data=pickle.loads(reply)
     if(data.flag==0):
         print("Could not Tweet, try again later")
@@ -70,8 +70,8 @@ def Unfollow(client_socket ,following):
     
     #server's reply
     reply=client_socket.recv(BUFFERSIZE)
-    while(len(reply)==0):
-        reply=client_socket.recv(BUFFERSIZE) 
+    # while(len(reply)==0):
+    #     reply=client_socket.recv(BUFFERSIZE) 
     data=pickle.loads(reply)
     if(data.flag==1):
         print(following, "unfollowed")
@@ -84,8 +84,8 @@ def DeleteFollower(client_socket ,follower):
     
     #server's reply
     reply=client_socket.recv(BUFFERSIZE)
-    while(len(reply)==0):
-        reply=client_socket.recv(BUFFERSIZE) 
+    # while(len(reply)==0):
+    #     reply=client_socket.recv(BUFFERSIZE) 
     data=pickle.loads(reply)
     if(data.flag==1):
         print(follower, "deleted")
@@ -98,8 +98,8 @@ def ShowAllFollowers(client_socket, username):
     
     #server to client
     reply=client_socket.recv(BUFFERSIZE)
-    while(len(reply)==0):
-        reply=client_socket.recv(BUFFERSIZE) 
+    # while(len(reply)==0):
+    #     reply=client_socket.recv(BUFFERSIZE) 
     data=pickle.loads(reply)
     names=data.arr 
     if len(names)==0:
@@ -118,8 +118,8 @@ def Refresh(client_socket):
     
     #server to client
     reply=client_socket.recv(BUFFERSIZE)
-    while(len(reply)==0):
-        reply=client_socket.recv(BUFFERSIZE) 
+    # while(len(reply)==0):
+    #     reply=client_socket.recv(BUFFERSIZE) 
     data = pickle.loads(reply)
     if(data.count==0):
         print("No new Tweets")
@@ -137,8 +137,8 @@ def SearchPerson(client_socket, name):
 
     #server to client
     reply = client_socket.recv(BUFFERSIZE)
-    while(len(reply)==0):
-        reply = client_socket.recv(BUFFERSIZE) 
+    # while(len(reply)==0):
+    #     reply = client_socket.recv(BUFFERSIZE) 
     data = pickle.loads(reply)
     if(len(data.name)>0 or len(data.username)>0):
         print("Name: ",data.name)
@@ -158,8 +158,8 @@ def Follow(client_socket,username):
     client_socket.send(data)
 
     reply = client_socket.recv(BUFFERSIZE)
-    while(len(reply)==0):
-        reply = client_socket.recv(BUFFERSIZE) 
+    # while(len(reply)==0):
+    #     reply = client_socket.recv(BUFFERSIZE) 
     data = pickle.loads(reply)
     if(data.flag==0):
         print("Invalid name/username")
@@ -175,8 +175,8 @@ def SearchByHashtag(client_socket, hashtag):
 
     #server to client
     reply = client_socket.recv(BUFFERSIZE)
-    while(len(reply)==0):
-        reply = client_socket.recv(BUFFERSIZE) 
+    # while(len(reply)==0):
+    #     reply = client_socket.recv(BUFFERSIZE) 
     data = pickle.loads(reply)
     if(len(data.tweets)==0):
         print("No tweets with this hashtag")
@@ -204,8 +204,8 @@ def TrendingHashtags(client_socket):
 
     #server to client
     reply = client_socket.recv(BUFFERSIZE)
-    while(len(reply)==0):
-        reply = client_socket.recv(BUFFERSIZE) 
+    # while(len(reply)==0):
+    #     reply = client_socket.recv(BUFFERSIZE) 
     data = pickle.loads(reply)
     result = data.hashtags
     print("Following are the top 5 trending hashtags")
@@ -230,15 +230,15 @@ def EnterChatRoom(client_socket):
                 print (message.decode('ascii')) 
             else: 
                 message = sys.stdin.readline().strip()
+                client_socket.send(message.encode('ascii')) 
+                sys.stdout.write("<You> ") 
+                sys.stdout.write(message+'\n')
                 if(str(message)=="exit"):
                     print("exiting")
                     flag=1
                     break
-                client_socket.send(message.encode('ascii')) 
-                sys.stdout.write("<You>\n") 
-                sys.stdout.write(message+'\n') 
                 sys.stdout.flush() 
-                
+
         if flag==1:
             break
     sys.stdout.write("Chat room exited\n") 
@@ -252,8 +252,8 @@ def Retweet(client_socket, id):
 
     #get confirmation of new tweet, this comes from newtweet function
     reply=client_socket.recv(BUFFERSIZE)
-    while(len(reply)==0):
-        reply=client_socket.recv(BUFFERSIZE) 
+    # while(len(reply)==0):
+    #     reply=client_socket.recv(BUFFERSIZE) 
     data=pickle.loads(reply)
     if(data.flag==0):
         print("Could not Tweet, try again later")
@@ -262,8 +262,8 @@ def Retweet(client_socket, id):
         client_socket.send(bytes("1".encode('ascii')))
         # #get the retweeted tweet and print it, this comes from retweet function
         reply=client_socket.recv(BUFFERSIZE)
-        while(len(reply)==0):
-            reply=client_socket.recv(BUFFERSIZE) 
+        # while(len(reply)==0):
+        #     reply=client_socket.recv(BUFFERSIZE) 
         data=pickle.loads(reply)
         print("Message:\n",data.message)
         print("Hashtags:")
@@ -271,9 +271,7 @@ def Retweet(client_socket, id):
             if(data.hashtags[i]!="NULL"):
                 print("#"+data.hashtags[i])
 
-    
-
-
-
-def LogOut():
-    pass
+def Logout(client_socket):
+    message = logout("Logout")
+    data = pickle.dumps(message)
+    client_socket.send(data)
