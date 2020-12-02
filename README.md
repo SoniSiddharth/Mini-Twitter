@@ -14,32 +14,36 @@ A basic and user friendly twitter in python3 and MySQL server database in the ba
 ## Usage
 
 1. Run MySQL server as Administrator and run the following queries for database setup (NOTE: Use exact names as specified below) -
-    - create database
+  - create database
 
     `$ create database Minitweet`<br />
-    - change database
+  - change database
 
     `$ use Minitweet`<br />
     
-    - create table Users
+  - create table Users
 
     `$ create table Users ( Username varchar(50) NOT NULL UNIQUE, Password varchar(50), Email varchar(50), Name varchar(50), Age int, Gender varchar(2), Status varchar(50), City varchar(50), Institute varchar(50));`<br />
     
-    - create table Tweets
+  - create table Tweets
 
     `$ create table Tweets ( Username varchar(50), TweetID varchar(20), TweetMessage varchar(500), Hashtag1 varchar(30), Hashtag2 varchar(30), Hashtag3 varchar(30), Hashtag4 varchar(30), Hashtag5 varchar(30), Retweets int DEFAULT 0);`<br />
 
+  - create table Hashtags
+
+    `$ create table Hashtags (Tag varchar(30), Count int);`<br />
+
 2. Open a terminal and run the server with following commmand and enter the port number when asked - 
 
-`$ python3 server.py`
+    `$ python3 server.py`
 
 3. Run multiple clients in different terminals with the following command - 
 
-`$ python3 client.py`
+    `$ python3 client.py`
 
 4. Run clients through GUI -
 
-`$ python3 client_gui.py`
+    `$ python3 client_gui.py`
 
 ---
 ## Architecture
